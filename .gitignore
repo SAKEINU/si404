@@ -2,9 +2,14 @@
 cache/
 out/
 
+# Solidity Compiler
+soljson-*
+
 # Ignores development broadcast logs
 !/broadcast
-/broadcast/*/31337/
+## SEI Dev net
+/broadcast/*/713715/
+/broadcast/*/11155111/
 /broadcast/**/dry-run/
 
 # Docs
@@ -12,3 +17,8 @@ docs/
 
 # Dotenv file
 .env
+
+
+
+# IDE 
+.vscode
