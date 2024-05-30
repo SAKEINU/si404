@@ -44,7 +44,7 @@ $ forge snapshot
 ### Deploy
 
 ```shell
-$ forge script script/SakeInu.s.sol:SakeInuScript --rpc-url <your_rpc_url> --private-key <your_private_key> --sig "run(address,address)" -- <owner> <initialMinter>
+$ forge script script/SI404.s.sol:SI404Script --rpc-url <your_rpc_url> --private-key <your_private_key> --sig "run(address,address)" -- <owner> <initialMinter>
 ```
 
 ## Safety

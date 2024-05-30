@@ -5,7 +5,7 @@ import {ERC404} from "erc404/ERC404.sol";
 import {Strings} from "openzeppelin-contracts/contracts/utils/Strings.sol";
 import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 
-contract SakeInu is ERC404, Ownable {
+contract SI404 is ERC404, Ownable {
     string private _baseURI;
 
     constructor(

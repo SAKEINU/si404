@@ -2,40 +2,40 @@
 pragma solidity ^0.8.13;
 
 import {Script, console} from "forge-std/Script.sol";
-import "../contracts/SakeInu.sol";
+import "../contracts/SI404.sol";
 
-contract SakeInuScript is Script {
+contract SI404Script is Script {
     function run(address owner_, address initialMinter_) external {
         vm.startBroadcast();
-        new SakeInu("SakeInu", "SI", 18, 100_000, owner_, initialMinter_);
+        new SI404("SI404", "SI", 18, 100_000, owner_, initialMinter_);
         vm.stopBroadcast();
     }
 
-    function selfExemptionList(address sakeInuAddr_, bool state_) external {
+    function selfExemptionList(address si404Addr_, bool state_) external {
         vm.startBroadcast();
         console.log(">>> selfExemptionList");
         console.log("Address of sender: ", msg.sender);
-        SakeInu sakeInu = SakeInu(sakeInuAddr_);
-        sakeInu.setSelfERC721TransferExempt(state_);
+        SI404 si404 = SI404(si404Addr_);
+        si404.setSelfERC721TransferExempt(state_);
         vm.stopBroadcast();
     }
 
-    function setBaseURI(address sakeInuAddr_, string memory baseURI) external {
+    function setBaseURI(address si404Addr_, string memory baseURI) external {
         vm.startBroadcast();
         console.log(">>> setBaseURI");
         console.log("Address of sender: ", msg.sender);
-        SakeInu sakeInu = SakeInu(sakeInuAddr_);
-        sakeInu.setBaseURI(baseURI);
+        SI404 si404 = SI404(si404Addr_);
+        si404.setBaseURI(baseURI);
         vm.stopBroadcast();
     }
 
-    function setERC721TransferExempt(address sakeInuAddr_, address account, bool _state) external {
+    function setERC721TransferExempt(address si404Addr_, address account, bool _state) external {
         vm.startBroadcast();
         console.log(">>> setERC721TransferExempt");
         console.log("Address of sender: ", msg.sender);
         console.log("Account: ", account, " state: ", _state);
-        SakeInu sakeInu = SakeInu(sakeInuAddr_);
-        sakeInu.setERC721TransferExempt(account, _state);
+        SI404 si404 = SI404(si404Addr_);
+        si404.setERC721TransferExempt(account, _state);
         vm.stopBroadcast();
     }
 }
