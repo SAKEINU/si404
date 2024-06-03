@@ -34,7 +34,7 @@ contract TestableSI404 is SI404 {
         address to,
         uint256 tokenId
     ) public {
-        _transferERC721(from, to, tokenId);
+        transferFrom(from, to, tokenId);
     }
 }
 
@@ -46,6 +46,7 @@ contract SI404Test is Test {
     uint8 constant test_decimals = 18;
     uint16 constant test_units = 10_000;
     uint32 constant test_maxTotalSupplyERC721 = 100_000;
+    uint256 idPrefix;
 
     function setUp() public {
         owner = makeAddr("owner");
@@ -60,6 +61,7 @@ contract SI404Test is Test {
             owner,
             initialMinter
         );
+        idPrefix = si404.ID_ENCODING_PREFIX();
     }
 
     function testOnlyOwnerCanSetBaseURI() public {
@@ -107,27 +109,42 @@ contract SI404Test is Test {
     function testERC721Lock() public {
         // Give user A a fractional value below the NFT minting threshold
         vm.prank(owner);
+        uint256 units = 10_000 * 10 ** test_decimals;
         uint256 nfts = 10;
-        uint256 balance = nfts * 10_000 * 10 ** test_decimals;
+        uint256 balance = nfts * units;
         si404.testMintERC20(userA, balance);
 
         uint256 lockedId = 0;
         uint256[] memory ids;
         for (uint256 i = 0; i < nfts; i++) {
             vm.prank(userA);
-            lockedId = (10 - i) + (1 << 255);
+            lockedId = (10 - i) + (idPrefix);
             si404.erc721Lock(lockedId);
             ids = si404.owned(userA);
             assertEq(ids[i], lockedId);
             vm.expectRevert();
             si404.testTransferERC721(userA, owner, lockedId);
+
+            // user cannot spend erc20 combined with locked erc721
+            vm.prank(userA);
+            vm.expectRevert();
+            si404.transfer(owner, (nfts - i) * units);
         }
 
         vm.prank(userA);
-        uint256 unlockedId = (nfts / 2) + (1 << 255);
+        uint256 unlockedId = (nfts / 2) + (idPrefix);
         si404.erc721Unlock(unlockedId);
         ids = si404.owned(userA);
         assertEq(ids[ids.length - 1], unlockedId);
+
+        vm.prank(userA);
+        si404.transfer(owner, units);
+        ids = si404.owned(userA);
+        assertEq(ids.length, nfts - 1);
+        // must send the unlockedId first
+        for (uint256 i = 0; i < ids.length; i++) {
+            assertNotEq(ids[i], unlockedId);
+        }
     }
 
     function testERC72Unlock() public {
@@ -141,18 +158,20 @@ contract SI404Test is Test {
         uint256[] memory ids;
         for (uint256 i = 0; i < nfts; i++) {
             vm.prank(userA);
-            target = (10 - i) + (1 << 255);
+            target = (10 - i) + (idPrefix);
             si404.erc721Lock(target);
         }
 
-
         for (uint256 i = 0; i < nfts; i++) {
             vm.prank(userA);
-            target = (i + 1) + (1 << 255);
+            target = (i + 1) + (idPrefix);
             si404.erc721Unlock(target);
             ids = si404.owned(userA);
             assertEq(ids[ids.length - 1], target);
+
+            vm.prank(userA);
             si404.testTransferERC721(userA, owner, target);
         }
+        assertEq(si404.balanceOf(userA), 0);
     }
 }
