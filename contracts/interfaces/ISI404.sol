@@ -5,4 +5,6 @@ import {IERC404} from "erc404/interfaces/IERC404.sol";
 
 interface ISI404 {
     error Locked();
+    error MaxERC721TransferExceeded();
+
 }

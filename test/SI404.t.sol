@@ -11,6 +11,7 @@ contract TestableSI404 is SI404 {
         string memory symbol,
         uint8 decimals,
         uint256 maxTotalSupplyERC721,
+        uint200 maxERC721Transfer,
         address initialOwner,
         address initialMintRecipient
     )
@@ -19,6 +20,7 @@ contract TestableSI404 is SI404 {
             symbol,
             decimals,
             maxTotalSupplyERC721,
+            maxERC721Transfer,
             initialOwner,
             initialMintRecipient
         )
@@ -46,6 +48,9 @@ contract SI404Test is Test {
     uint8 constant test_decimals = 18;
     uint16 constant test_units = 10_000;
     uint32 constant test_maxTotalSupplyERC721 = 100_000;
+    uint32 constant test_maxERC721Transfer = 1_000;
+    uint256 constant test_scaledUnits = test_units * 10 ** test_decimals;
+
     uint256 idPrefix;
 
     function setUp() public {
@@ -58,6 +63,7 @@ contract SI404Test is Test {
             "SI",
             test_decimals,
             test_maxTotalSupplyERC721,
+            test_maxERC721Transfer,
             owner,
             initialMinter
         );
@@ -104,6 +110,39 @@ contract SI404Test is Test {
         si404.testMintERC20(userA, 5000 * 10 ** test_decimals); // Half the amount required for 1 NFT
         assertEq(si404.erc20BalanceOf(userA), 5000 * 10 ** test_decimals);
         assertEq(si404.erc721BalanceOf(userA), 0);
+    }
+
+    function testMaxERC721TransferExceeded() public {
+        vm.prank(initialMinter);
+        si404.transfer(userA, (test_maxERC721Transfer) * test_scaledUnits);
+        assertEq(
+            si404.erc20BalanceOf(userA),
+            (test_maxERC721Transfer) * test_scaledUnits
+        );
+
+        vm.prank(initialMinter);
+        vm.expectRevert();
+        si404.transfer(userA, (test_maxERC721Transfer + 1) * test_scaledUnits);
+
+        vm.prank(owner);
+        si404.setMaxERC721Transfer((test_maxERC721Transfer - 1));
+        assertEq(si404.maxERC721Transfer(), test_maxERC721Transfer - 1);
+
+        vm.prank(initialMinter);
+        vm.expectRevert();
+        si404.transfer(userA, (test_maxERC721Transfer) * test_scaledUnits);
+
+        address userB = makeAddr("userB");
+        vm.prank(userB);
+        si404.setSelfERC721TransferExempt(true);
+        assertEq(si404.erc721TransferExempt(userB), true);
+
+        vm.prank(initialMinter);
+        si404.transfer(userB, (test_maxERC721Transfer * 10) * test_scaledUnits);
+        assertEq(
+            si404.erc20BalanceOf(userB),
+            (test_maxERC721Transfer * 10) * test_scaledUnits
+        );
     }
 
     function testERC721Lock() public {

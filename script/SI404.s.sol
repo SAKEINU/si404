@@ -7,7 +7,7 @@ import "../contracts/SI404.sol";
 contract SI404Script is Script {
     function run(address owner_, address initialMinter_) external {
         vm.startBroadcast();
-        new SI404("SI404", "SI", 18, 100_000, owner_, initialMinter_);
+        new SI404("SI404", "SI", 18, 100_000, 150, owner_, initialMinter_);
         vm.stopBroadcast();
     }
 

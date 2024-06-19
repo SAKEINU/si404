@@ -7,6 +7,8 @@ import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 import {ISI404} from "./interfaces/ISI404.sol";
 
 contract SI404 is ERC404, ISI404, Ownable {
+    uint256 public maxERC721Transfer;
+
     string private _baseURI;
 
     /// @dev ERC-721 Tokens that are locked
@@ -20,10 +22,12 @@ contract SI404 is ERC404, ISI404, Ownable {
         string memory symbol_,
         uint8 decimals_,
         uint256 maxTotalSupplyERC721_,
+        uint256 maxERC721Transfer_,
         address initialOwner_,
         address initialMintRecipient_
     ) ERC404(name_, symbol_, decimals_) Ownable(initialOwner_) {
         // Do not mint the ERC721s to the initial owner, as it's a waste of gas.
+        maxERC721Transfer = maxERC721Transfer_;
         _setERC721TransferExempt(initialMintRecipient_, true);
         _mintERC20(initialMintRecipient_, maxTotalSupplyERC721_ * _unit());
     }
@@ -55,6 +59,10 @@ contract SI404 is ERC404, ISI404, Ownable {
 
     function baseURI() public view virtual returns (string memory) {
         return _baseURI;
+    }
+
+    function erc721Locked(uint256 id_) public virtual returns (bool) {
+        return _locked[id_];
     }
 
     function erc721Lock(uint256 id_) public virtual {
@@ -94,27 +102,6 @@ contract SI404 is ERC404, ISI404, Ownable {
         _lockedTokens[msg.sender]--;
     }
 
-    function _swapERC721(
-        address owner,
-        uint256 fromIdx_,
-        uint256 toIdx_
-    ) internal virtual {
-        if (fromIdx_ == toIdx_) {
-            return;
-        }
-
-        (_owned[owner][fromIdx_], _owned[owner][toIdx_]) = (
-            _owned[owner][toIdx_],
-            _owned[owner][fromIdx_]
-        );
-
-        uint256 fromId = _owned[owner][fromIdx_];
-        uint256 toId = _owned[owner][toIdx_];
-
-        _setOwnedIndex(fromId, fromIdx_);
-        _setOwnedIndex(toId, toIdx_);
-    }
-
     function _transferERC721(
         address from_,
         address to_,
@@ -140,10 +127,52 @@ contract SI404 is ERC404, ISI404, Ownable {
         _setERC721TransferExempt(account_, value_);
     }
 
+    function setMaxERC721Transfer(uint256 value_) public onlyOwner {
+        maxERC721Transfer = value_;
+    }
+
     ////////////////////////////////////////////////////////////////
     //                      INTERNAL FUNCTIONS                    //
     ////////////////////////////////////////////////////////////////
     function _setBaseURI(string memory baseURI_) internal virtual {
         _baseURI = baseURI_;
+    }
+
+    function _swapERC721(
+        address owner,
+        uint256 fromIdx_,
+        uint256 toIdx_
+    ) internal virtual {
+        if (fromIdx_ == toIdx_) {
+            return;
+        }
+
+        (_owned[owner][fromIdx_], _owned[owner][toIdx_]) = (
+            _owned[owner][toIdx_],
+            _owned[owner][fromIdx_]
+        );
+
+        uint256 fromId = _owned[owner][fromIdx_];
+        uint256 toId = _owned[owner][toIdx_];
+
+        _setOwnedIndex(fromId, fromIdx_);
+        _setOwnedIndex(toId, toIdx_);
+    }
+
+    /// @notice Internal function for ERC-20 transfers. Also handles any ERC-721 transfers that may be required.
+    // Handles ERC-721 exemptions.
+    function _transferERC20WithERC721(
+        address from_,
+        address to_,
+        uint256 value_
+    ) internal virtual override returns (bool) {
+        if (
+            (!erc721TransferExempt(from_) || !erc721TransferExempt(to_)) &&
+            (value_ / _unit()) > maxERC721Transfer
+        ) {
+            revert MaxERC721TransferExceeded();
+        }
+
+        return ERC404._transferERC20WithERC721(from_, to_, value_);
     }
 }
