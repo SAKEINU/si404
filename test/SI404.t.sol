@@ -47,8 +47,8 @@ contract SI404Test is Test {
     address userA;
     uint8 constant test_decimals = 18;
     uint16 constant test_units = 10_000;
-    uint32 constant test_maxTotalSupplyERC721 = 100_000;
-    uint32 constant test_maxERC721Transfer = 1_000;
+    uint32 constant test_maxTotalSupplyERC721 = 10_000;
+    uint32 constant test_maxERC721Transfer = 1_00;
     uint256 constant test_scaledUnits = test_units * 10 ** test_decimals;
 
     uint256 idPrefix;

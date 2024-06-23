@@ -9,13 +9,13 @@ import {ISI404} from "./interfaces/ISI404.sol";
 contract SI404 is ERC404, ISI404, Ownable {
     uint256 public maxERC721Transfer;
 
-    string private _baseURI;
+    string public baseURI;
 
     /// @dev ERC-721 Tokens that are locked
-    mapping(uint256 => bool) internal _locked;
+    mapping(uint256 => bool) public locked;
 
     /// @dev The number of lockedTokens for a given address
-    mapping(address => uint256) internal _lockedTokens;
+    mapping(address => uint256) public lockedTokens;
 
     constructor(
         string memory name_,
@@ -44,25 +44,16 @@ contract SI404 is ERC404, ISI404, Ownable {
             "ERC721Metadata: URI query for invalid token"
         );
 
-        string memory base = baseURI();
-        require(bytes(base).length != 0, "ERC721 is not revealed yet");
+        require(bytes(baseURI).length != 0, "ERC721 is not revealed yet");
 
         return
             string(
                 abi.encodePacked(
-                    base,
+                    baseURI,
                     Strings.toString(tokenId - ID_ENCODING_PREFIX),
                     ".json"
                 )
             );
-    }
-
-    function baseURI() public view virtual returns (string memory) {
-        return _baseURI;
-    }
-
-    function erc721Locked(uint256 id_) public virtual returns (bool) {
-        return _locked[id_];
     }
 
     function erc721Lock(uint256 id_) public virtual {
@@ -70,36 +61,36 @@ contract SI404 is ERC404, ISI404, Ownable {
             revert Unauthorized();
         }
 
-        if (_locked[id_]) {
+        if (locked[id_]) {
             return;
         }
 
         delete getApproved[id_];
 
         uint256 lockCandidateIndex = _getOwnedIndex(id_);
-        uint256 firstUnlockedIndex = _lockedTokens[msg.sender];
+        uint256 firstUnlockedIndex = lockedTokens[msg.sender];
         _swapERC721(msg.sender, lockCandidateIndex, firstUnlockedIndex);
 
-        _lockedTokens[msg.sender]++;
-        _locked[id_] = true;
+        lockedTokens[msg.sender]++;
+        locked[id_] = true;
     }
 
-    function erc721Unlock(uint256 id_) public virtual {
+    function erc721Unlock(uint256 id_) external virtual {
         if (_getOwnerOf(id_) != msg.sender) {
             revert Unauthorized();
         }
 
-        if (!_locked[id_]) {
+        if (!locked[id_]) {
             return;
         }
 
         uint256 lockedIndex = _getOwnedIndex(id_);
-        uint256 lastLockedIndex = _lockedTokens[msg.sender] - 1;
+        uint256 lastLockedIndex = lockedTokens[msg.sender] - 1;
 
         _swapERC721(msg.sender, lockedIndex, lastLockedIndex);
 
-        delete _locked[id_];
-        _lockedTokens[msg.sender]--;
+        delete locked[id_];
+        lockedTokens[msg.sender]--;
     }
 
     function _transferERC721(
@@ -107,27 +98,28 @@ contract SI404 is ERC404, ISI404, Ownable {
         address to_,
         uint256 id_
     ) internal virtual override {
-        if (_locked[id_]) {
-            revert Locked();
-        }
+        require(
+            !locked[id_],
+            string.concat("SI404: ", Strings.toString(id_), " is locked")
+        );
         ERC404._transferERC721(from_, to_, id_);
     }
 
     ////////////////////////////////////////////////////////////////
     //                      ADMIN FUNCTIONS                       //
     ////////////////////////////////////////////////////////////////
-    function setBaseURI(string memory baseURI_) public onlyOwner {
+    function setBaseURI(string memory baseURI_) external virtual onlyOwner {
         _setBaseURI(baseURI_);
     }
 
     function setERC721TransferExempt(
         address account_,
         bool value_
-    ) external onlyOwner {
+    ) external virtual onlyOwner {
         _setERC721TransferExempt(account_, value_);
     }
 
-    function setMaxERC721Transfer(uint256 value_) public onlyOwner {
+    function setMaxERC721Transfer(uint256 value_) external virtual onlyOwner {
         maxERC721Transfer = value_;
     }
 
@@ -135,7 +127,7 @@ contract SI404 is ERC404, ISI404, Ownable {
     //                      INTERNAL FUNCTIONS                    //
     ////////////////////////////////////////////////////////////////
     function _setBaseURI(string memory baseURI_) internal virtual {
-        _baseURI = baseURI_;
+        baseURI = baseURI_;
     }
 
     function _swapERC721(
@@ -166,13 +158,16 @@ contract SI404 is ERC404, ISI404, Ownable {
         address to_,
         uint256 value_
     ) internal virtual override returns (bool) {
-        if (
-            (!erc721TransferExempt(from_) || !erc721TransferExempt(to_)) &&
-            (value_ / _unit()) > maxERC721Transfer
-        ) {
-            revert MaxERC721TransferExceeded();
+        if (!erc721TransferExempt(from_) || !erc721TransferExempt(to_)) {
+            require(
+                (value_ / _unit()) <= maxERC721Transfer,
+                string.concat(
+                    "SI404: Max ERC721 transfer (",
+                    Strings.toString(maxERC721Transfer),
+                    ") exceeded"
+                )
+            );
         }
-
         return ERC404._transferERC20WithERC721(from_, to_, value_);
     }
 }

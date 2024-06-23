@@ -1,10 +1,12 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {IERC404} from "erc404/interfaces/IERC404.sol";
-
 interface ISI404 {
-    error Locked();
-    error MaxERC721TransferExceeded();
+    // ERC-721 lock/unlock functions
+    function erc721Lock(uint256 id_) external;
+    function erc721Unlock(uint256 id_) external;
 
+    // Admin functions
+    function setBaseURI(string memory baseURI_) external;
+    function setMaxERC721Transfer(uint256 value_) external;
 }
