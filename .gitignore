@@ -18,7 +18,12 @@ docs/
 # Dotenv file
 .env
 
-
-
 # IDE 
 .vscode
+
+# hardhat
+node_modules
+artifacts
+cache_hardhat
+typechain-types
+ignition/deployments

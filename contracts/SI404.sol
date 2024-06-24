@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.25;
 
 import {ERC404} from "erc404/ERC404.sol";
 import {Strings} from "openzeppelin-contracts/contracts/utils/Strings.sol";
