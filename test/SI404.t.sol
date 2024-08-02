@@ -99,16 +99,21 @@ contract SI404Test is Test {
 
         // Test fractional values, ensure no NFT minted
         vm.prank(owner);
-        si404.testMintERC20(userA, 9999 * 10 ** test_decimals); // Slightly less than the required for 1 NFT
-        assertEq(si404.erc20BalanceOf(userA), 9999 * 10 ** test_decimals);
+        si404.testMintERC20(userA, test_scaledUnits - 1); // Slightly less than the required for 1 NFT
+        assertEq(si404.erc20BalanceOf(userA), test_scaledUnits - 1);
         assertEq(si404.erc721BalanceOf(userA), 0);
+
+        vm.prank(owner);
+        si404.testMintERC20(userA, 1); // Slightly less than the required for 1 NFT
+        assertEq(si404.erc20BalanceOf(userA), test_scaledUnits);
+        assertEq(si404.erc721BalanceOf(userA), 1);
     }
 
     function testFractionalERC20NoMint() public {
         // Give user A a fractional value below the NFT minting threshold
         vm.prank(owner);
-        si404.testMintERC20(userA, 5000 * 10 ** test_decimals); // Half the amount required for 1 NFT
-        assertEq(si404.erc20BalanceOf(userA), 5000 * 10 ** test_decimals);
+        si404.testMintERC20(userA, test_scaledUnits / 2); // Half the amount required for 1 NFT
+        assertEq(si404.erc20BalanceOf(userA), test_scaledUnits / 2);
         assertEq(si404.erc721BalanceOf(userA), 0);
     }
 

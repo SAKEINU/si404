@@ -56,7 +56,7 @@ contract SI404 is ERC404, ISI404, Ownable {
             );
     }
 
-    function erc721Lock(uint256 id_) public virtual {
+    function erc721Lock(uint256 id_) external virtual {
         if (_getOwnerOf(id_) != msg.sender) {
             revert Unauthorized();
         }
