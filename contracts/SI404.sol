@@ -33,7 +33,7 @@ contract SI404 is ERC404, ISI404, Ownable {
     }
 
     function _unit() internal view override returns (uint256) {
-        return 10_000 * (10 ** uint256(decimals));
+        return 100_000 * (10 ** uint256(decimals));
     }
 
     function tokenURI(
