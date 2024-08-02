@@ -14,8 +14,8 @@ contract SI404 is ERC404, ISI404, Ownable {
     /// @dev ERC-721 Tokens that are locked
     mapping(uint256 => bool) public locked;
 
-    /// @dev The number of lockedTokens for a given address
-    mapping(address => uint256) public lockedTokens;
+    /// @dev The number of lockedERC721Count for a given address
+    mapping(address => uint256) public lockedERC721Count;
 
     constructor(
         string memory name_,
@@ -68,10 +68,10 @@ contract SI404 is ERC404, ISI404, Ownable {
         delete getApproved[id_];
 
         uint256 lockCandidateIndex = _getOwnedIndex(id_);
-        uint256 firstUnlockedIndex = lockedTokens[msg.sender];
+        uint256 firstUnlockedIndex = lockedERC721Count[msg.sender];
         _swapERC721(msg.sender, lockCandidateIndex, firstUnlockedIndex);
 
-        lockedTokens[msg.sender]++;
+        lockedERC721Count[msg.sender]++;
         locked[id_] = true;
     }
 
@@ -85,12 +85,12 @@ contract SI404 is ERC404, ISI404, Ownable {
         }
 
         uint256 lockedIndex = _getOwnedIndex(id_);
-        uint256 lastLockedIndex = lockedTokens[msg.sender] - 1;
+        uint256 lastLockedIndex = lockedERC721Count[msg.sender] - 1;
 
         _swapERC721(msg.sender, lockedIndex, lastLockedIndex);
 
         delete locked[id_];
-        lockedTokens[msg.sender]--;
+        lockedERC721Count[msg.sender]--;
     }
 
     function _transferERC721(

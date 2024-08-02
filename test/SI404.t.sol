@@ -46,7 +46,7 @@ contract SI404Test is Test {
     address initialMinter;
     address userA;
     uint8 constant test_decimals = 18;
-    uint16 constant test_units = 10_000;
+    uint32 constant test_units = 100_000;
     uint32 constant test_maxTotalSupplyERC721 = 10_000;
     uint32 constant test_maxERC721Transfer = 1_00;
     uint256 constant test_scaledUnits = test_units * 10 ** test_decimals;
@@ -148,9 +148,8 @@ contract SI404Test is Test {
     function testERC721Lock() public {
         // Give user A a fractional value below the NFT minting threshold
         vm.prank(owner);
-        uint256 units = 10_000 * 10 ** test_decimals;
         uint256 nfts = 10;
-        uint256 balance = nfts * units;
+        uint256 balance = nfts * test_scaledUnits;
         si404.testMintERC20(userA, balance);
 
         uint256 lockedId = 0;
@@ -167,7 +166,7 @@ contract SI404Test is Test {
             // user cannot spend erc20 combined with locked erc721
             vm.prank(userA);
             vm.expectRevert();
-            si404.transfer(owner, (nfts - i) * units);
+            si404.transfer(owner, (nfts - i) * test_scaledUnits);
         }
 
         vm.prank(userA);
@@ -177,7 +176,7 @@ contract SI404Test is Test {
         assertEq(ids[ids.length - 1], unlockedId);
 
         vm.prank(userA);
-        si404.transfer(owner, units);
+        si404.transfer(owner, test_scaledUnits);
         ids = si404.owned(userA);
         assertEq(ids.length, nfts - 1);
         // must send the unlockedId first
@@ -190,7 +189,7 @@ contract SI404Test is Test {
         // Give user A a fractional value below the NFT minting threshold
         vm.prank(owner);
         uint256 nfts = 10;
-        uint256 balance = nfts * 10_000 * 10 ** test_decimals;
+        uint256 balance = nfts * test_scaledUnits;
         si404.testMintERC20(userA, balance);
 
         uint256 target = 0;

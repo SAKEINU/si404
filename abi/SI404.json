@@ -738,7 +738,7 @@
         ],
         "stateMutability": "view",
         "type": "function",
-        "name": "lockedTokens",
+        "name": "lockedERC721Count",
         "outputs": [
             {
                 "internalType": "uint256",
