@@ -40,6 +40,13 @@ if (privateKey) {
       gas: "auto",
       gasPrice: "auto",
     },
+    sei_atlantic_2: {
+      url: "https://evm-rpc-testnet.sei-apis.com/",
+      chainId: 1328,
+      accounts: [privateKey],
+      gas: "auto",
+      gasPrice: "auto",
+    },
     sei_pacific_1:  {
       url: "https://evm-rpc.sei-apis.com/",
       chainId: 1329,
@@ -67,6 +74,14 @@ if (seitraceKey) {
         chainId: 713715,
         urls: {
           apiURL: "https://seitrace.com/arctic-1/api",
+          browserURL: "https://seitrace.com"
+        }
+      },
+      {
+        network: "atlantic-2",
+        chainId: 1328,
+        urls: {
+          apiURL: "https://seitrace.com/atlantic-2/api",
           browserURL: "https://seitrace.com"
         }
       },
