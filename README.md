@@ -12,7 +12,7 @@ SI404 extends beyond traditional crypto projects by blending in fun with functio
 This project extends ERC404 by integrating overridable base units. For the base implementation of ERC404, see [ERC404 repository](https://github.com/Pandora-Labs-Org/erc404).
 
 ## Features
-- 10,000 tokens are combined with 1 NFT.
+- 100,000 tokens are combined with 1 NFT.
 - Transfers on one side will be reflected on the other side.
 
 ## Usage
@@ -44,7 +44,7 @@ $ forge snapshot
 ### Deploy
 
 ```shell
-$ forge script script/SakeInu.s.sol:SakeInuScript --rpc-url <your_rpc_url> --private-key <your_private_key> --sig "run(address,address)" -- <owner> <initialMinter>
+$ forge script script/SI404.s.sol:SI404Script --rpc-url <your_rpc_url> --private-key <your_private_key> --sig "run(address,address)" -- <owner> <initialMinter>
 ```
 
 ## Safety
