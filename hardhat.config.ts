@@ -66,6 +66,7 @@ if (seitraceKey) {
   config.etherscan = {
     apiKey: {
       sei_arctic_1: seitraceKey,
+      sei_atlantic_2: seitraceKey,
       sei_pacific_1: seitraceKey,
     },
     customChains: [
@@ -78,7 +79,7 @@ if (seitraceKey) {
         }
       },
       {
-        network: "atlantic-2",
+        network: "sei_atlantic_2",
         chainId: 1328,
         urls: {
           apiURL: "https://seitrace.com/atlantic-2/api",
